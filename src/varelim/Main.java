@@ -20,7 +20,8 @@ public class Main {
 		
 		// Get the network from the reader
 		ArrayList<Variable> variables = reader.getVariables();
-		System.out.println(variables.get(1).getProbabilities());
+		Variable E = variables.get(2);
+		System.out.println(E.getProbabilities());
 		// Make user interface
 		//UserInterface ui = new UserInterface(variables);
 		
