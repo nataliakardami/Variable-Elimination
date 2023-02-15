@@ -34,7 +34,7 @@ public class Main {
 		Variable query = variables.get(4); // R
 		Variable evidence = variables.get(1); //S
 		ArrayList<ObsVar> obs = new ArrayList<ObsVar>();
-		ObsVar ev = new ObsVar(evidence, "M");
+		ObsVar ev = new ObsVar(E, "high");
 		obs.add(ev);
 		//System.out.println(evidence.getProbabilities().toString());
 		
@@ -42,10 +42,11 @@ public class Main {
 
 		VarElim ve = new VarElim(variables,query,obs);
 		ArrayList<Factor> initFactors = ve.makeFactors();
-		System.out.println(initFactors.get(2).getProbs().toString());// E
+		//System.out.println(initFactors.get(2).getProbs().toString());// E
 		//obs.add(new ObsVar(E, networkName));
-		initFactors.get(2).reduce(obs);
-		System.out.println(initFactors.get(2).getProbs().toString());
+		ve.reduceObserved();
+		System.out.println(ve.getFactors());
+		//System.out.println(initFactors.get(2).getProbs().toString());
 
 
 

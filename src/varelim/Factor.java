@@ -37,9 +37,9 @@ public class Factor {
             //String obsVal = var.getValue();
             while (iterator.hasNext()){
                 Condition key = iterator.next();
-
+                
                 if (key.contains(var)){
-                    System.out.println("____________removing.....___________");
+                    System.out.println("____________reducing entry to.....___________");
                     System.out.println(key.toString());
                     iterator.remove();
 
