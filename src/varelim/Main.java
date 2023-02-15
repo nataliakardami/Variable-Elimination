@@ -1,6 +1,7 @@
 package varelim;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * Main class to read in a network, add queries and observed variables, and run variable elimination.
@@ -20,10 +21,34 @@ public class Main {
 		
 		// Get the network from the reader
 		ArrayList<Variable> variables = reader.getVariables();
-		Variable E = variables.get(2);
-		System.out.println(E.getProbabilities());
+		//System.out.println(variables.toString());
 		// Make user interface
-		//UserInterface ui = new UserInterface(variables);
+		
+		UserInterface ui = new UserInterface(variables);
+		// MANUAL TESTING
+		Variable E = variables.get(2);
+
+		Map<Condition,Double> probs = E.getProbabilities();
+		//System.out.println(probs.keySet());
+
+		Variable query = variables.get(4); // R
+		Variable evidence = variables.get(0);
+		ArrayList<ObsVar> obs = new ArrayList<ObsVar>();
+		ObsVar ev = new ObsVar(evidence, "young");
+		obs.add(ev);
+		//System.out.println(evidence.getProbabilities().toString());
+		
+
+
+		VarElim ve = new VarElim(variables,query,obs);
+		ArrayList<Factor> initFactors = ve.makeFactors();
+		System.out.println(initFactors.get(0).getProbs().toString());
+		//obs.add(new ObsVar(E, networkName));
+		initFactors.get(0).reduce(obs);
+
+
+
+
 		
 		// Print variables and probabilities
 		//ui.printNetwork();

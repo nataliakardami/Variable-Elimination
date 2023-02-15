@@ -6,7 +6,7 @@ import java.util.PriorityQueue;
 public class VarElim {
     private Variable query;
     private ArrayList<ObsVar> observed;
-    private ArrayList<Variable> hidden;
+    private ArrayList<Variable> variables;
         /*
     function:
         1) make factors
@@ -21,16 +21,34 @@ public class VarElim {
     public VarElim(UserInterface ui, ArrayList<Variable> vars){
         this.query = ui.getQueriedVariable();
         this.observed = ui.getObservedVariables();
-        this.hidden = vars;
+        this.variables = vars;
     }
-
-     public void make_factors(){
+    /**
+     * Constructor for manual input 
+     * @param vars
+     * @param query
+     * @param observed
+     */
+    public VarElim(ArrayList<Variable> vars, Variable query, ArrayList<ObsVar> observed){
+        this.query = query;
+        this.observed = observed;
+        this.variables = vars;
+    }
+    /**
+     * Compiles an Arraylist of all the initial factors
+     * by iterating over each node of the network (besides the observed)
+    */
+     public  ArrayList<Factor> makeFactors(){
         ArrayList<Factor> f = new ArrayList<Factor>();
         //PriorityQueue ??
-        f.add(new Factor(query));
-        for (Variable var:hidden){
+        //f.add(new Factor(query));
+        for (Variable var:this.variables){
             f.add(new Factor(var));
         }
-    
+        return f;
+     }
+
+     public void reduceObserved(){
+
      }
 }

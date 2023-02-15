@@ -1,7 +1,9 @@
 package varelim;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class Factor {
     private ArrayList<Variable> involved;
@@ -22,7 +24,21 @@ public class Factor {
 
     // ****** FACTOR OPERATIONS *******
     
-    public Factor reduce(){
+    public Factor reduce(ArrayList<ObsVar> observed){
+        Iterator<Condition> iterator = probs.keySet().iterator(); // iterate over the map of probs
+
+        for (ObsVar var:observed){
+            //String obsVal = var.getValue();
+            while (iterator.hasNext()){
+                Condition key = iterator.next();
+
+                if (key.contains(var)){
+
+                }
+
+            }
+    
+        }
         return this;
     }
 
