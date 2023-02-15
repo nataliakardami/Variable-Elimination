@@ -2,11 +2,12 @@ package varelim;
 
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.PriorityQueue;
+
 public class VarElim {
     private Variable query;
     private ArrayList<ObsVar> observed;
     private ArrayList<Variable> variables;
+    ArrayList<Factor> factors;
         /*
     function:
         1) make factors
@@ -18,10 +19,17 @@ public class VarElim {
         4) multiply and normalize remaining factors
 
      */
+
+     /**
+      * Constructor for UI
+      * @param ui
+      * @param vars
+      */
     public VarElim(UserInterface ui, ArrayList<Variable> vars){
         this.query = ui.getQueriedVariable();
         this.observed = ui.getObservedVariables();
         this.variables = vars;
+        this.factors = makeFactors();
     }
     /**
      * Constructor for manual input 
@@ -33,6 +41,7 @@ public class VarElim {
         this.query = query;
         this.observed = observed;
         this.variables = vars;
+        this.factors = makeFactors();
     }
     /**
      * Compiles an Arraylist of all the initial factors
@@ -49,6 +58,15 @@ public class VarElim {
      }
 
      public void reduceObserved(){
+            for (Factor f:factors){
+                f.reduce(observed);
+            }
 
+     }
+
+
+     // ********** SETTERS AND GETTERS ************
+     public ArrayList<Factor> getFactors() {
+         return factors;
      }
 }
