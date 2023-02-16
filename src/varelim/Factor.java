@@ -71,7 +71,7 @@ public class Factor {
         copy.remove(elim);
         Map<Condition,Double> sums = new HashMap<Condition, Double>();
 
-        if(copy.size() > 0){
+        if(true){
             Variable var = copy.get(0);
 
             for(String val: var.getValues()){
@@ -80,8 +80,8 @@ public class Factor {
                     Variable other = copy.get(1);
                     
                     for(String other_val : other.getValues()){
-                        
-                        while (iterator.hasNext()){
+                        // this ^ for loop and this while might need to be switched??
+                        while (iterator.hasNext()){ // this terminates after the pair young high has been 
                             Condition key = iterator.next();
                             double sum = 0;
 
@@ -92,11 +92,21 @@ public class Factor {
                             observed.add(ob1);
                             observed.add(ob2);
                             
-                            if (key.contains(ob1) && key.contains(ob2)){
+                            if (key.contains(ob1) && key.contains(ob2)){ // NEVER TRUE
                                 sum += this.probs.get(key);
                             }
+                            //****  alt condition */
+                            if (key.contains(new Condition(observed))){ //this loops
+                               // sum += this.probs.get(key);
+                                sums.put(new Condition(observed), sum);
+                                
+                            }
+                            //iterator.next();
+                        if (sum>0){
+                           //sums.put(new Condition(observed), sum);
+                        }
                             
-                            sums.put(new Condition(observed), sum);
+                          
                         }
                     }
                 }
@@ -143,18 +153,15 @@ public class Factor {
             for (String val:inv.getValues()){
                 poss.add(new ObsVar(inv, val));
             }
-            conds.add(new Condition(poss));
         }
-
         
+        //conds.add(new Condition(poss.));
+
         while (iterator.hasNext()){
             Condition key = iterator.next();
             
-            for (Condition cond:conds){
-            if (cond.contains(key)){
-                probs.get(key);
+            for (int i = 0; i>poss.size();i++){
 
-            }
         }
            
                 

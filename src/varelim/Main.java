@@ -32,10 +32,11 @@ public class Main {
 		//System.out.println(probs.keySet());
 
 		Variable query = variables.get(4); // R
-		Variable evidence = variables.get(1); //S
+		Variable S = variables.get(1); //S
+		Variable O = variables.get(3);
 		ArrayList<ObsVar> obs = new ArrayList<ObsVar>();
 		ObsVar ev = new ObsVar(E, "high");
-		obs.add(new ObsVar(evidence, "F"));
+		obs.add(new ObsVar(O, "small"));
 		//System.out.println(evidence.getProbabilities().toString());
 		
 
@@ -44,10 +45,10 @@ public class Main {
 		ArrayList<Factor> initFactors = ve.makeFactors();
 		//System.out.println(initFactors.get(2).getProbs().toString());// E
 		//obs.add(new ObsVar(E, networkName));
-		ve.reduceObserved();
+		//ve.reduceObserved();
 		System.out.println(ve.getFactors());
-		System.out.println(initFactors.get(2).getProbs().toString());
-		System.out.println(initFactors.get(2).sumOut(evidence).getProbs());
+		System.out.println(initFactors.get(5).getProbs().toString());
+		System.out.println(initFactors.get(2).sumOut(S).getProbs());
 
 
 
