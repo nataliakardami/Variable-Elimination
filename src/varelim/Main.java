@@ -46,10 +46,10 @@ public class Main {
 		//System.out.println(initFactors.get(2).getProbs().toString());// E
 		//obs.add(new ObsVar(E, networkName));
 		//ve.reduceObserved();
-		System.out.println(ve.getFactors());
-		System.out.println(initFactors.get(5).getProbs().toString());
-		System.out.println(initFactors.get(2).sumOut(S).getProbs());
-
+		//System.out.println(ve.getFactors());
+		//System.out.println(initFactors.get(5).getProbs().toString());
+		Factor out = initFactors.get(2).sumOut2(S);
+		System.out.println(out.getProbs());
 
 
 		

@@ -20,6 +20,11 @@ public class Factor {
        this.involved = var.getParents();
        this.involved.add(var);
     }
+    public Factor(ArrayList<Variable> var, Map<Condition,Double> probs){
+        this.probs = probs;
+        this.involved = var;
+        //his.involved.add(var);
+     }
 
 
     // ****** FACTOR OPERATIONS *******
@@ -147,27 +152,51 @@ public class Factor {
         ArrayList<ObsVar> poss = new ArrayList<>();
         ArrayList<Condition> conds = new ArrayList<>();
         ArrayList<Variable> vars = new ArrayList<>(this.involved);
+        ArrayList<Double> summed = new ArrayList<Double>();
+
+        HashMap<Condition,Double> newprobs = new HashMap<>();
+        Double sumd = 0.0;
+        //Double[] matches = new Double[6];
+        ArrayList<Double> matches = new ArrayList<Double>();
         vars.remove(elim);
         
-        for (Variable inv:vars){ // make an array for
-            for (String val:inv.getValues()){
-                poss.add(new ObsVar(inv, val));
+        for (String val1:vars.get(0).getValues()){
+            for (String val2:vars.get(1).getValues()){
+                poss.add(new ObsVar(vars.get(0),val1));
+                poss.add(new ObsVar(vars.get(1),val2));
+                conds.add(new Condition(poss));
+                poss.clear();
             }
-        }
-        
-        //conds.add(new Condition(poss.));
-
-        while (iterator.hasNext()){
-            Condition key = iterator.next();
-            
-            for (int i = 0; i>poss.size();i++){
-
-        }
            
-                
-            }
-
+        }
+        System.out.println(conds.toString());
+        sumd = 0.0;
+        while (iterator.hasNext()){
+            sumd = 0.0;
             
+            Condition row = iterator.next();
+            Condition match = null;
+            for (Condition cond:conds){
+                
+                
+                if(row.contains(cond)){
+                    sumd += probs.get(row); 
+                    match = cond;
+                    matches.add(sumd);
+                    //this.setProbs(probs);
+                    
+                    
+                }
+              
+            }
+            //sumd += probs.get(match);
+            summed.add(sumd);
+            newprobs.put(match,sumd);
+            //sumd = 0.0;
+           
+            // remove one of the two identical entries
+        }
+        //conds.add(new Condition(poss.));
         
             // A,B involved 
             // C elim
@@ -175,13 +204,11 @@ public class Factor {
             // find all Conditions where "A=a,B=b", 
             // sum the corresponding values for all 
             // possible values of elim
-            // entry.value = sum(elim.getPossibleValues())
-        
-            
-        
-        return this;
-
-
+            // entry.value = sum(elim.getPossibleValues()
+        //this.setProbs(newprobs);
+        System.out.println("matches "+matches.toString());
+        System.out.println(newprobs.size());
+        return new Factor(vars,newprobs);
     }
     
     public Factor normalize(){
