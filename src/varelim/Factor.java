@@ -156,7 +156,7 @@ public class Factor {
 
         HashMap<Condition,Double> newprobs = new HashMap<>();
         Double sumd = 0.0;
-        //Double[] matches = new Double[6];
+      
         ArrayList<Double> matches = new ArrayList<Double>();
         vars.remove(elim);
         
@@ -170,42 +170,35 @@ public class Factor {
            
         }
         System.out.println(conds.toString());
+        Condition match = null;
         sumd = 0.0;
         while (iterator.hasNext()){
             sumd = 0.0;
             
             Condition row = iterator.next();
-            Condition match = null;
+            
             for (Condition cond:conds){
                 
                 
                 if(row.contains(cond)){
                     sumd += probs.get(row); 
                     match = cond;
-                    matches.add(sumd);
-                    //this.setProbs(probs);
-                    
-                    
+                    matches.add(sumd); 
                 }
               
             }
+            
+            //matches.clear();
             //sumd += probs.get(match);
             summed.add(sumd);
-            newprobs.put(match,sumd);
-            //sumd = 0.0;
+            
+            //sumd = 0.0;\
            
-            // remove one of the two identical entries
+            newprobs.put(match,sumd);
+
         }
-        //conds.add(new Condition(poss.));
-        
-            // A,B involved 
-            // C elim
-            //
-            // find all Conditions where "A=a,B=b", 
-            // sum the corresponding values for all 
-            // possible values of elim
-            // entry.value = sum(elim.getPossibleValues()
-        //this.setProbs(newprobs);
+       
+      
         System.out.println("matches "+matches.toString());
         System.out.println(newprobs.size());
         return new Factor(vars,newprobs);
