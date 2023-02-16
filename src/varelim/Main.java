@@ -35,7 +35,7 @@ public class Main {
 		Variable evidence = variables.get(1); //S
 		ArrayList<ObsVar> obs = new ArrayList<ObsVar>();
 		ObsVar ev = new ObsVar(E, "high");
-		obs.add(ev);
+		obs.add(new ObsVar(evidence, "F"));
 		//System.out.println(evidence.getProbabilities().toString());
 		
 
@@ -46,8 +46,8 @@ public class Main {
 		//obs.add(new ObsVar(E, networkName));
 		ve.reduceObserved();
 		System.out.println(ve.getFactors());
-		//System.out.println(initFactors.get(2).getProbs().toString());
-
+		System.out.println(initFactors.get(2).getProbs().toString());
+		System.out.println(initFactors.get(2).sumOut(evidence).getProbs());
 
 
 
