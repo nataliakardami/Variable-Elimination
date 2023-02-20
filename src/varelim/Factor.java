@@ -65,8 +65,86 @@ public class Factor {
         
     }
 
+
+    public Factor sum(Variable elim){
+        Iterator<Condition> iterator = probs.keySet().iterator(); // iterate over the map of probs
+    
+        System.out.println(probs.size());
+        ArrayList<ObsVar> poss = new ArrayList<>();
+        ArrayList<Condition> conds = new ArrayList<>();
+        ArrayList<Variable> vars = new ArrayList<>(this.involved);
+        ArrayList<Double> summed = new ArrayList<Double>();
+
+        HashMap<Condition,Double> newprobs = new HashMap<>();
+        Double sumd = 0.0;
+        ArrayList<Double> lists = new ArrayList<>();
+      
+        ArrayList<Double> matches = new ArrayList<Double>();
+        vars.remove(elim);
+
+        // loop over condition
+        
+        for (String val1:vars.get(0).getValues()){
+            for (String val2:vars.get(1).getValues()){
+                poss.add(new ObsVar(vars.get(0),val1));
+                poss.add(new ObsVar(vars.get(1),val2));
+                conds.add(new Condition(poss));
+                poss.clear();
+            }
+           
+        }
+        System.out.println(conds.toString());
+        Condition match = null;
+        sumd = 0.0;
+
+        while (iterator.hasNext()){
+           // sumd = 0.0;
+           lists.clear();
+        
+        
+            for (Condition cond: conds){ // e | a
+                
+                Condition row = iterator.next(); // E | a,s
+            
+                for (String possibility:elim.getValues()){
+                     
+                    ObsVar observation = new ObsVar(elim, possibility); // s=m 
+                    if(row.contains(cond) && row.contains(observation)){
+                        sumd += probs.get(row); 
+                        lists.add(probs.get(row));
+                        match = cond; // Condition
+                        matches.add(sumd); 
+                        newprobs.put(match,sumd);
+                        
+                    }
+                    
+                }
+
+
+            }
+
+            // newprobs.put(match,sumd);
+            
+            //matches.clear();
+            //sumd += probs.get(match);
+            summed.add(sumd);
+            
+            sumd = 0.0;
+           
+
+        }
+       
+      
+        System.out.println("matches "+matches.toString());
+        System.out.println(newprobs.size());
+        return new Factor(vars,newprobs);
+    }
+
+
+    
+
     public Factor sumOut(Variable elim){
-        Iterator<Condition> iterator = getProbs().keySet().iterator();
+        // Iterator<Condition> iterator = getProbs().keySet().iterator();
         // involved 
 
         System.out.println(probs.size());
@@ -80,6 +158,7 @@ public class Factor {
             Variable var = copy.get(0);
 
             for(String val: var.getValues()){
+                Iterator<Condition> iterator = getProbs().keySet().iterator();
                 
                 if(copy.size() > 1){
                     Variable other = copy.get(1);
@@ -156,9 +235,12 @@ public class Factor {
 
         HashMap<Condition,Double> newprobs = new HashMap<>();
         Double sumd = 0.0;
+        ArrayList<Double> lists = new ArrayList<>();
       
         ArrayList<Double> matches = new ArrayList<Double>();
         vars.remove(elim);
+
+        // loop over condition
         
         for (String val1:vars.get(0).getValues()){
             for (String val2:vars.get(1).getValues()){
@@ -173,7 +255,8 @@ public class Factor {
         Condition match = null;
         sumd = 0.0;
         while (iterator.hasNext()){
-            sumd = 0.0;
+           // sumd = 0.0;
+           lists.clear();
             
             Condition row = iterator.next();
             
@@ -181,20 +264,24 @@ public class Factor {
                 
                 
                 if(row.contains(cond)){
-                    sumd += probs.get(row); 
-                    match = cond;
+                    sumd = probs.get(row); 
+                    lists.add(probs.get(row));
+                    match = cond; // Condition
                     matches.add(sumd); 
+                    newprobs.put(match,sumd);
+                    
                 }
-              
+                
             }
+
+            // newprobs.put(match,sumd);
             
             //matches.clear();
             //sumd += probs.get(match);
             summed.add(sumd);
             
-            //sumd = 0.0;\
+            sumd = 0.0;
            
-            newprobs.put(match,sumd);
 
         }
        
@@ -202,6 +289,59 @@ public class Factor {
         System.out.println("matches "+matches.toString());
         System.out.println(newprobs.size());
         return new Factor(vars,newprobs);
+    }
+
+    public Factor kms(Variable elim){
+         
+        System.out.println(probs.size());
+        ArrayList<ObsVar> poss = new ArrayList<>();
+        ArrayList<Condition> conds = new ArrayList<>();
+        ArrayList<Variable> vars = new ArrayList<>(this.involved);
+        //ArrayList<Double> summed = new ArrayList<Double>();
+
+        HashMap<Condition,Double> newprobs = new HashMap<>();
+        Double sumd = 0.0;
+      
+        ArrayList<Condition> matches = new ArrayList<Condition>();
+        Condition match;
+        vars.remove(elim);
+
+        // loop over condition
+        
+        for (String val1:vars.get(0).getValues()){
+            for (String val2:vars.get(1).getValues()){
+                poss.add(new ObsVar(vars.get(0),val1));
+                poss.add(new ObsVar(vars.get(1),val2));
+                conds.add(new Condition(poss));
+                poss.clear();
+            }
+           
+        }
+        // ****** new attempt ***********
+        ArrayList<String> elimVals = elim.getValues();
+
+        for (int i=0;i<elimVals.size();i++){
+            ObsVar obs = new ObsVar(elim, elimVals.get(i));
+            Iterator<Condition> iterator = probs.keySet().iterator();
+            Condition row = iterator.next();
+            while (iterator.hasNext()){
+
+                if (row.contains(obs)){
+                    sumd+= probs.get(row);
+                    
+                }
+               row = iterator.next();
+            }
+            newprobs.put(row, sumd);
+            sumd = 0.0;
+
+
+        }
+
+
+
+        return new Factor(vars,probs);
+
     }
     
     public Factor normalize(){

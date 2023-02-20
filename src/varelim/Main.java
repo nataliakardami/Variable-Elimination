@@ -12,7 +12,7 @@ import java.util.Map;
  * @author Pepe Tiebosch
  */
 public class Main {
-	private final static String networkName = "survey.bif"; // The network to be read in (format and other networks can be found on http://www.bnlearn.com/bnrepository/)
+	private final static String networkName = "earthquake.bif"; // The network to be read in (format and other networks can be found on http://www.bnlearn.com/bnrepository/)
 
 	public static void main(String[] args) {
 		
@@ -26,17 +26,17 @@ public class Main {
 		
 		UserInterface ui = new UserInterface(variables);
 		// MANUAL TESTING
-		Variable E = variables.get(2);
+		Variable E = variables.get(1);
 
 		Map<Condition,Double> probs = E.getProbabilities();
 		//System.out.println(probs.keySet());
 
 		Variable query = variables.get(4); // R
-		Variable S = variables.get(1); //S
-		Variable O = variables.get(3);
+		Variable S = variables.get(0); //S
+		Variable O = variables.get(2);
 		ArrayList<ObsVar> obs = new ArrayList<ObsVar>();
 		ObsVar ev = new ObsVar(E, "high");
-		obs.add(new ObsVar(O, "small"));
+		obs.add(new ObsVar(E, "True"));
 		//System.out.println(evidence.getProbabilities().toString());
 		
 
@@ -47,8 +47,8 @@ public class Main {
 		//obs.add(new ObsVar(E, networkName));
 		//ve.reduceObserved();
 		//System.out.println(ve.getFactors());
-		//System.out.println(initFactors.get(5).getProbs().toString());
-		Factor out = initFactors.get(2).sumOut2(S);
+		// System.out.println(initFactors.toString());
+		Factor out = initFactors.get(2).sum(S);
 		System.out.println(out.getProbs());
 
 
