@@ -4,27 +4,35 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Factor {
     private ArrayList<Variable> involved;
-    private Map<Condition,Double> probs;
+    private Map<Condition, Double> probs;
     private Variable simpleVar;
 
 
     /**
      * Constructor for a one dimensional factor
      */
-    public Factor(Variable var){
-       this.simpleVar = var;
-       this.probs = var.getProbabilities();
-       this.involved = var.getParents();
-       this.involved.add(var);
+    public Factor(Variable var) {
+        this.simpleVar = var;
+        this.probs = var.getProbabilities();
+        this.involved = var.getParents();
+        this.involved.add(var);
     }
-    public Factor(ArrayList<Variable> var, Map<Condition,Double> probs){
+
+    public Factor(ArrayList<Variable> var, Map<Condition, Double> probs) {
         this.probs = probs;
         this.involved = var;
         //his.involved.add(var);
-     }
+    }
+
+    public Factor(Factor o){
+        this.involved = o.getInvolved();
+        this.probs = o.getProbs();
+        this.simpleVar = o.getSimpleVar();
+    }
 
 
     // ****** FACTOR OPERATIONS *******
@@ -33,323 +41,278 @@ public class Factor {
     /**
      * Reduces the factor object by the evidence variables provided.
      * Removes the irrelevant probability values from this.probs
+     *
      * @param observed
      * @return self
      */
-    public Factor reduce(ArrayList<ObsVar> observed){
-       
+    public Factor reduce(ArrayList<ObsVar> observed) {
+
         Iterator<Condition> iterator = probs.keySet().iterator(); // iterate over the map of probs
-    
+
         System.out.println(probs.size());
 
-        for (ObsVar var:observed){
+        for (ObsVar var : observed) {
             //String obsVal = var.getValue();
-            while (iterator.hasNext()){
+            while (iterator.hasNext()) {
                 Condition key = iterator.next();
-                
-            if (key.mention(var.getVar())){
-                if (!key.contains(var)){
-                    System.out.println("____________removing......___________");
-                    System.out.println(key.toString());
-                    iterator.remove();
 
+                if (key.mention(var.getVar())) {
+                    if (!key.contains(var)) {
+                        System.out.println("____________removing......___________");
+                        System.out.println(key.toString());
+                        iterator.remove();
+
+                    }
                 }
-            }
 
             }
-            
+
         }
         this.setProbs(probs);
         System.out.println(probs.size());
         return this;
-        
+
     }
 
 
-    public Factor sum(Variable elim){
-        Iterator<Condition> iterator = probs.keySet().iterator(); // iterate over the map of probs
-    
+    public Factor sumOut(Variable elim) {
+        
         System.out.println(probs.size());
         ArrayList<ObsVar> poss = new ArrayList<>();
         ArrayList<Condition> conds = new ArrayList<>();
-        ArrayList<Variable> vars = new ArrayList<>(this.involved);
+        ArrayList<Variable> vars1 = new ArrayList<>(this.involved);
         ArrayList<Double> summed = new ArrayList<Double>();
 
-        HashMap<Condition,Double> newprobs = new HashMap<>();
+        HashMap<Condition, Double> newprobs = new HashMap<>();
         Double sumd = 0.0;
-        ArrayList<Double> lists = new ArrayList<>();
-      
-        ArrayList<Double> matches = new ArrayList<Double>();
-        vars.remove(elim);
+
+        vars1.remove(elim);
+        
+        // remove duplicates of vars
+        ArrayList<Variable> vars = new ArrayList<>(vars1.stream().distinct().collect(Collectors.toList()));
+
 
         // loop over condition
-        
-        for (String val1:vars.get(0).getValues()){
-            for (String val2:vars.get(1).getValues()){
-                poss.add(new ObsVar(vars.get(0),val1));
-                poss.add(new ObsVar(vars.get(1),val2));
+        for (String val1 : vars.get(0).getValues()) {
+            if(vars.size() >=2 ){
+                for (String val2 : vars.get(1).getValues()) {
+                    poss.add(new ObsVar(vars.get(1), val2));
+                    poss.add(new ObsVar(vars.get(0), val1));
+                    // poss.add(new ObsVar(vars.get(1), val2));
+                    conds.add(new Condition(poss));
+                    poss.clear();
+                }
+            }
+            else{
+                poss.add(new ObsVar(vars.get(0), val1));
+                // poss.add(new ObsVar(vars.get(1), val2));
                 conds.add(new Condition(poss));
                 poss.clear();
             }
-           
+
         }
-        System.out.println(conds.toString());
+
         Condition match = null;
         sumd = 0.0;
+        ObsVar observation = null;
 
-        while (iterator.hasNext()){
-           // sumd = 0.0;
-           lists.clear();
-        
-        
-            for (Condition cond: conds){ // e | a
-                
-                Condition row = iterator.next(); // E | a,s
+        for (Condition cond : conds) { // e | a
+
+           for (String possibility : elim.getValues()) {
+                Iterator<Condition> iterator = probs.keySet().iterator(); // iterate over the map of probs
             
-                for (String possibility:elim.getValues()){
-                     
-                    ObsVar observation = new ObsVar(elim, possibility); // s=m 
-                    if(row.contains(cond) && row.contains(observation)){
-                        sumd += probs.get(row); 
-                        lists.add(probs.get(row));
+                observation = new ObsVar(elim, possibility);  // s=m
+
+                while (iterator.hasNext()) {
+
+                    Condition row = iterator.next(); // E | a , s
+
+                    // for some reason the equals function did not work with
+                    // an ObsVar as a parameter, so I worked around it : )
+                    ArrayList<ObsVar> q = new ArrayList<ObsVar>();
+                    q.add(observation);
+                    Condition help = new Condition(q);
+                    
+                    boolean bool1 = row.contains(cond);
+                    boolean bool2 = row.contains(help);
+                    
+                    if (bool1 && bool2) {
+                        sumd += probs.get(row);
                         match = cond; // Condition
-                        matches.add(sumd); 
-                        newprobs.put(match,sumd);
-                        
+                        newprobs.put(match, sumd);
+
                     }
-                    
+
                 }
 
 
             }
 
-            // newprobs.put(match,sumd);
-            
-            //matches.clear();
-            //sumd += probs.get(match);
+            newprobs.put(match,sumd);
             summed.add(sumd);
-            
+
             sumd = 0.0;
-           
 
         }
-       
-      
-        System.out.println("matches "+matches.toString());
-        System.out.println(newprobs.size());
-        return new Factor(vars,newprobs);
+
+        return new Factor(vars, newprobs);
     }
+   
 
 
-    
 
-    public Factor sumOut(Variable elim){
-        // Iterator<Condition> iterator = getProbs().keySet().iterator();
-        // involved 
-
-        System.out.println(probs.size());
+    public void normalize() {
 
 
-        ArrayList<Variable> copy = new ArrayList<>(this.involved);
-        copy.remove(elim);
-        Map<Condition,Double> sums = new HashMap<Condition, Double>();
+        Map<Condition, Double> map = getProbs();
+        Iterator<Condition> iterator = map.keySet().iterator(); // iterate over the map of probs
+        double sum = 0;
 
-        if(true){
-            Variable var = copy.get(0);
 
-            for(String val: var.getValues()){
-                Iterator<Condition> iterator = getProbs().keySet().iterator();
-                
-                if(copy.size() > 1){
-                    Variable other = copy.get(1);
-                    
-                    for(String other_val : other.getValues()){
-                        // this ^ for loop and this while might need to be switched??
-                        while (iterator.hasNext()){ // this terminates after the pair young high has been 
-                            Condition key = iterator.next();
-                            double sum = 0;
-
-                            ObsVar ob1 = new ObsVar(var, val);
-                            ObsVar ob2 = new ObsVar(other, other_val);
-
-                            ArrayList<ObsVar> observed = new ArrayList<>();
-                            observed.add(ob1);
-                            observed.add(ob2);
-                            
-                            if (key.contains(ob1) && key.contains(ob2)){ // NEVER TRUE
-                                sum += this.probs.get(key);
-                            }
-                            //****  alt condition */
-                            if (key.contains(new Condition(observed))){ //this loops
-                               // sum += this.probs.get(key);
-                                sums.put(new Condition(observed), sum);
-                                
-                            }
-                            //iterator.next();
-                        if (sum>0){
-                           //sums.put(new Condition(observed), sum);
-                        }
-                            
-                          
-                        }
-                    }
-                }
-                // else???
-                // Map <C,V> add (condition, summed val)
-
-            }
-        }
-
-        
-        this.setProbs(sums);
-        System.out.println(sums.size());
-        return this;
-
-        }
-    
-    
-    /*
-        input  = var
-        copy = copy(involved)
-        copy.remove(var)
-
-        for( possible values of first var in copy)
-            if (has nextVar)
-            for(possible values of next var)
-                if 'var = true ' and 'next var = true'
-                    find next occurence
-                    sum prob var and nextvar
-                    store it
-        
-                
-            
-    */
-    public Factor sumOut2(Variable elim){
-        Iterator<Condition> iterator = probs.keySet().iterator(); // iterate over the map of probs
-    
-        System.out.println(probs.size());
-        ArrayList<ObsVar> poss = new ArrayList<>();
-        ArrayList<Condition> conds = new ArrayList<>();
-        ArrayList<Variable> vars = new ArrayList<>(this.involved);
-        ArrayList<Double> summed = new ArrayList<Double>();
-
-        HashMap<Condition,Double> newprobs = new HashMap<>();
-        Double sumd = 0.0;
-        ArrayList<Double> lists = new ArrayList<>();
-      
-        ArrayList<Double> matches = new ArrayList<Double>();
-        vars.remove(elim);
-
-        // loop over condition
-        
-        for (String val1:vars.get(0).getValues()){
-            for (String val2:vars.get(1).getValues()){
-                poss.add(new ObsVar(vars.get(0),val1));
-                poss.add(new ObsVar(vars.get(1),val2));
-                conds.add(new Condition(poss));
-                poss.clear();
-            }
-           
-        }
-        System.out.println(conds.toString());
-        Condition match = null;
-        sumd = 0.0;
         while (iterator.hasNext()){
-           // sumd = 0.0;
-           lists.clear();
-            
-            Condition row = iterator.next();
-            
-            for (Condition cond:conds){
-                
-                
-                if(row.contains(cond)){
-                    sumd = probs.get(row); 
-                    lists.add(probs.get(row));
-                    match = cond; // Condition
-                    matches.add(sumd); 
-                    newprobs.put(match,sumd);
-                    
-                }
-                
-            }
+            Condition key = iterator.next();
 
-            // newprobs.put(match,sumd);
-            
-            //matches.clear();
-            //sumd += probs.get(match);
-            summed.add(sumd);
-            
-            sumd = 0.0;
-           
-
+            sum += map.get(key);
         }
-       
-      
-        System.out.println("matches "+matches.toString());
-        System.out.println(newprobs.size());
-        return new Factor(vars,newprobs);
-    }
 
-    public Factor kms(Variable elim){
-         
-        System.out.println(probs.size());
-        ArrayList<ObsVar> poss = new ArrayList<>();
-        ArrayList<Condition> conds = new ArrayList<>();
-        ArrayList<Variable> vars = new ArrayList<>(this.involved);
-        //ArrayList<Double> summed = new ArrayList<Double>();
-
-        HashMap<Condition,Double> newprobs = new HashMap<>();
-        Double sumd = 0.0;
-      
-        ArrayList<Condition> matches = new ArrayList<Condition>();
-        Condition match;
-        vars.remove(elim);
-
-        // loop over condition
+        iterator = map.keySet().iterator(); // iterate over the map of probs
         
-        for (String val1:vars.get(0).getValues()){
-            for (String val2:vars.get(1).getValues()){
-                poss.add(new ObsVar(vars.get(0),val1));
-                poss.add(new ObsVar(vars.get(1),val2));
-                conds.add(new Condition(poss));
-                poss.clear();
-            }
-           
+        Map<Condition, Double> newProbs = new HashMap<>();
+
+
+        while (iterator.hasNext()){
+            Condition key = iterator.next();
+
+            double temp = map.get(key);
+
+            newProbs.put(key, temp/sum);
         }
-        // ****** new attempt ***********
-        ArrayList<String> elimVals = elim.getValues();
 
-        for (int i=0;i<elimVals.size();i++){
-            ObsVar obs = new ObsVar(elim, elimVals.get(i));
-            Iterator<Condition> iterator = probs.keySet().iterator();
-            Condition row = iterator.next();
-            while (iterator.hasNext()){
+        this.setProbs(newProbs);
 
-                if (row.contains(obs)){
-                    sumd+= probs.get(row);
-                    
+
+    }
+
+
+
+    public Factor multiply(Factor f1) {
+        Factor f2 = new Factor(this); 
+
+        Map<Condition, Double> newprobs = new HashMap<>();
+        
+        ArrayList<Variable> common = new ArrayList<>();
+        ArrayList<Variable> f1_unique = new ArrayList<>(f1.involved);
+        ArrayList<Variable> f2_unique = new ArrayList<>(f2.involved);
+        
+        for (Variable var1:f1_unique){
+            for (Variable var2:f2_unique){
+                if (var1.equals(var2)){
+                    f1_unique.remove(var1);
+                    f2_unique.remove(var1);
+                    common.add(var1);
                 }
-               row = iterator.next();
             }
-            newprobs.put(row, sumd);
-            sumd = 0.0;
-
-
         }
 
+        // unique variables in both factors
+        f1_unique.removeAll(common);
+        f2_unique.removeAll(common);
+
+        // ---------------------------
+
+        Condition cond = null;
+
+        double multi = 1.0;
+
+        // loop f1 unique and values
+        for(Variable f1_var: f1_unique){ 
+            for (String val1: f1_var.getValues()){
+
+                // loop f2 unique and values
+                for(Variable f2_var: f2_unique){
+                    for(String val2: f2_var.getValues()){
+                        
+                        //loop through every common variable 
+                        // and it's possible values
+                        for(Variable var: common){
+                            for (String value: var.getValues()){
+
+                                ArrayList<ObsVar> poss_val = new ArrayList<>(); // list for the conditions
+
+                                ObsVar temp1 = new ObsVar(f1_var, val1); // parameter
+                                ObsVar temp2 = new ObsVar(f2_var, val2); // this factor
+                                ObsVar comm = new ObsVar(var, value); // common var
+
+                                // get first prob X = x, Y = y
+                                poss_val.add(comm); // common
+                                poss_val.add(temp1); // f1
+                                // System.out.println("f1: " + f1.getProbs());
+
+                                Condition kms = new Condition(poss_val);
+                                // System.out.println(kms);
 
 
-        return new Factor(vars,probs);
+                                double x1 = 0;
 
-    }
+                                Map<Condition, Double> map = f1.getProbs();
+                                Iterator<Condition> iterator = map.keySet().iterator(); // iterate over the map of probs
+
+                                while (iterator.hasNext()) {
+                                    Condition key = iterator.next();
+                    
+                                    if (key.contains(kms)) {
+                                        x1 = map.get(key);
+                                    }
+                    
+                                }                             
+
+
+                            
+                                poss_val.clear();
+
+                                // get second prob Y = y, Z = z
+                                poss_val.add(comm);
+                                poss_val.add(temp2);
+                                
+                                
+                                kms = new Condition(poss_val);
+
+                                map = f2.getProbs();
+                                iterator = map.keySet().iterator(); // iterate over the map of probs
+
+                                double x2 = 0;
+                                
+                                while (iterator.hasNext()) {
+                                    Condition key = iterator.next();
+                    
+                                    if (key.contains(kms)) {
+                                        x2 = map.get(key);
+                                    }
+                    
+                                } 
+
+                                multi = x1 * x2;
+
+                                // for the final condition
+                                poss_val.add(temp1);
+                                
+                                cond = new Condition(poss_val);
+
+                                newprobs.put(cond, multi);
+
+
+                            }
+
+                        }
+                    }
+
+                }
+            }
+        }
     
-    public Factor normalize(){
-        return this;
-    }
-
-    public Factor multiply(Factor f){
-        return f;
+        f2_unique.addAll(f1_unique);
+        f2_unique.addAll(common);
+        return new Factor(f2_unique, newprobs);
     }
 
 
@@ -357,7 +320,11 @@ public class Factor {
     public ArrayList<Variable> getInvolved() {
         return involved;
     }
-    
+
+    public int size(){
+        return involved.size();
+    }
+
     public Map<Condition, Double> getProbs() {
         return probs;
     }
@@ -369,11 +336,10 @@ public class Factor {
     public void setSimpleVar(Variable simpleVar) {
         this.simpleVar = simpleVar;
     }
+
     public void setProbs(Map<Condition, Double> probs) {
         this.probs = probs;
     }
 
 
-
-    
 }
