@@ -44,9 +44,12 @@ public class Main {
 		// Print the query and observed variables
 		// ui.printQueryAndObserved();
 
-        Variable B = variables.get(0);
-        Variable E = variables.get(1);
-        Variable A = variables.get(2);
+        // MANUAL TESTING
+
+        // 
+        Variable B = variables.get(0); // quake -> B, 
+        Variable E = variables.get(1); // quake -> E, 
+        Variable A = variables.get(2); // quake -> A, 
 
         Variable query = variables.get(4); // R
         Variable S = variables.get(0); //S
@@ -57,6 +60,12 @@ public class Main {
         obs.add(new ObsVar(E, "True"));
 
         VarElim ve = new VarElim(variables, query, obs);
+
+        // necessary for varibale elimination!!!!!!!!!!!!!!!!
+        for(Variable var: variables){
+            var.setVarElim(ve);
+        }
+
         ArrayList<Factor> initFactors = ve.makeFactors();
         Factor out = initFactors.get(2).sumOut(B);
         Factor out2 = initFactors.get(2).sumOut(E);
@@ -70,9 +79,12 @@ public class Main {
         kms.normalize();
         System.out.println("output after normalization: " + kms.getProbs());
 
+        
+
 
 		
 		//PUT YOUR CALL TO THE VARIABLE ELIMINATION ALGORITHM HERE
+
 		
 	}
 

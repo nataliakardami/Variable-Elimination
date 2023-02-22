@@ -49,7 +49,7 @@ public class Factor {
 
         Iterator<Condition> iterator = probs.keySet().iterator(); // iterate over the map of probs
 
-        System.out.println(probs.size());
+        // System.out.println(probs.size());
 
         for (ObsVar var : observed) {
             //String obsVal = var.getValue();
@@ -69,12 +69,19 @@ public class Factor {
 
         }
         this.setProbs(probs);
-        System.out.println(probs.size());
+        // System.out.println(probs.size());
         return this;
 
     }
 
 
+    /**
+     * Returns a new factor with the relevant variables and probabilities,
+     *  after summing out the variable given in the parameter.
+     * 
+     * @param elim the variable to be eliminated
+     * @return new factor
+     */
     public Factor sumOut(Variable elim) {
         
         System.out.println(probs.size());
@@ -161,6 +168,9 @@ public class Factor {
 
 
 
+    /**
+     * Normalizes the probabilities of a factor, so all probabilities sum up to 1.
+     */
     public void normalize() {
 
 
@@ -195,6 +205,11 @@ public class Factor {
 
 
 
+    /**
+     * 
+     * @param f1 
+     * @return
+     */
     public Factor multiply(Factor f1) {
         Factor f2 = new Factor(this); 
 
@@ -315,6 +330,8 @@ public class Factor {
         return new Factor(f2_unique, newprobs);
     }
 
+
+    
 
     // ****** SETTERS AND GETTERS *******
     public ArrayList<Variable> getInvolved() {

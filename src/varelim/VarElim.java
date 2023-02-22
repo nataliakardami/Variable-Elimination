@@ -1,13 +1,15 @@
 package varelim;
 
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.PriorityQueue;
 
 public class VarElim {
     private Variable query;
     private ArrayList<ObsVar> observed;
     private ArrayList<Variable> variables;
     ArrayList<Factor> factors;
+
+
         /*
     function:
         1) make factors
@@ -19,6 +21,30 @@ public class VarElim {
         4) multiply and normalize remaining factors
 
      */
+
+        public void algorithm(){
+            ArrayList<Factor> factors = this.factors;
+
+            PriorityQueue<Variable> queue = new PriorityQueue<>();
+
+            Variable current = queue.poll();
+
+            System.out.println("Variable to be eliminated : " + current);
+            
+            // for all factors find the factor with size >=2 and sum out 'current' (variable)
+            for(Factor f: factors){
+                
+                if (f.getInvolved().size() > 1){
+                    f.sumOut(current);
+                }
+            }
+
+            
+
+            
+        }
+    
+
 
      /**
       * Constructor for UI
@@ -47,7 +73,7 @@ public class VarElim {
      * Compiles an Arraylist of all the initial factors
      * by iterating over each node of the network (besides the observed)
     */
-     public  ArrayList<Factor> makeFactors(){
+    public  ArrayList<Factor> makeFactors(){
         ArrayList<Factor> f = new ArrayList<Factor>();
         //PriorityQueue ??
         //f.add(new Factor(query));
@@ -55,18 +81,20 @@ public class VarElim {
             f.add(new Factor(var));
         }
         return f;
-     }
+    }
 
-     public void reduceObserved(){
+    public void reduceObserved(){
             for (Factor f:factors){
                 f.reduce(observed);
             }
 
-     }
+    }
+
+    
 
 
      // ********** SETTERS AND GETTERS ************
-     public ArrayList<Factor> getFactors() {
+    public ArrayList<Factor> getFactors() {
          return factors;
-     }
+    }
 }
