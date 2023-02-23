@@ -274,10 +274,6 @@ public class Factor {
                 
             }
 
-            // newprobs.put(match,sumd);
-            
-            //matches.clear();
-            //sumd += probs.get(match);
             summed.add(sumd);
             
             sumd = 0.0;
