@@ -96,7 +96,7 @@ public class Factor {
         vars1.remove(elim);
         
         // remove duplicates of vars
-        ArrayList<Variable> vars = new ArrayList<>(vars1.stream().distinct().collect(Collectors.toList()));
+        ArrayList<Variable> vars = new ArrayList<>(vars.stream().distinct().collect(Collectors.toList()));
 
 
         // loop over condition
