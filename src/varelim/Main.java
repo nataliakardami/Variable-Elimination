@@ -44,35 +44,64 @@ public class Main {
 		// Print the query and observed variables
 		// ui.printQueryAndObserved();
 
-        // MANUAL TESTING
+      
 
         // 
+
+
+
+     // MANUAL TESTING suzyyy
         Variable B = variables.get(0); // quake -> B, 
         Variable E = variables.get(1); // quake -> E, 
         Variable A = variables.get(2); // quake -> A, 
 
-        Variable query = variables.get(4); // R
+        Variable query = variables.get(4); // Mary Calls
         Variable S = variables.get(0); //S
         Variable O = variables.get(2);
 
         ArrayList<ObsVar> obs = new ArrayList<ObsVar>();
         // ObsVar ev = new ObsVar(E, "high");
-        obs.add(new ObsVar(E, "True"));
+        obs.add(new ObsVar(E, "True")); // EVIDENCE EARTH == true
 
         VarElim ve = new VarElim(variables, query, obs);
 
-        // necessary for varibale elimination!!!!!!!!!!!!!!!!
+        // necessary for elimination!!!!!!!!!!!!!!!!
+        // why?
         for(Variable var: variables){
             var.setVarElim(ve);
+        
         }
+        Factor out = ve.getFactors().get(2).sumOut(B);
+        Factor out2 = ve.getFactors().get(2).sumOut(E);
+        Factor kms = out.sumOut(E);
 
-        ArrayList<Factor> initFactors = ve.makeFactors();
+        System.out.println("outB1: " + out.getProbs());
+        System.out.println("outE: " + out2.getProbs());
+        
+       // Factor output = out.multiply(out2);
+        //System.out.println("output: " + output);
+        kms.normalize();
+        System.out.println("output after normalization: " + kms.getProbs());
+        Factor f1 = ve.getFactors().get(0);
+        Factor f2 = ve.getFactors().get(2);
+        Factor fc = f1.multiply(f2);
+        ve.start();
+  
+        // System.out.println(fc);
+
+
+
+
+
+         /* 
+        ArrayList<Factor> initFactors = ve.getFactors();
+       // ArrayList<Factor> initFactors = ve.makeFactors();
         Factor out = initFactors.get(2).sumOut(B);
         Factor out2 = initFactors.get(2).sumOut(E);
         Factor kms = out.sumOut(E);
 
-        // System.out.println("out1: " + out.getProbs());
-        System.out.println("out2: " + out2.getProbs());
+        System.out.println("outB1: " + out.getProbs());
+        System.out.println("outE: " + out2.getProbs());
         
         // Factor output = out.multiply(out2);
         System.out.println("output: " + kms.getProbs());
@@ -87,6 +116,7 @@ public class Main {
 
 		
 	}
+*/
 
 /*
  * 
@@ -156,4 +186,5 @@ public class Main {
 
     }
     */
+}
 }

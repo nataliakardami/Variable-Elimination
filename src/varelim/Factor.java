@@ -3,6 +3,8 @@ package varelim;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -96,8 +98,9 @@ public class Factor {
         vars1.remove(elim);
         
         // remove duplicates of vars
-        ArrayList<Variable> vars = new ArrayList<>(vars.stream().distinct().collect(Collectors.toList()));
-
+    
+        // ArrayList<Variable> vars = new ArrayList<>(vars1.stream().distinct().collect(Collectors.toList()));
+        ArrayList<Variable> vars = new ArrayList<Variable>(new LinkedHashSet<Variable>(vars1));
 
         // loop over condition
         for (String val1 : vars.get(0).getValues()) {
@@ -338,7 +341,10 @@ public class Factor {
         return involved;
     }
 
-    public int size(){
+    /**
+     * @return the dimension of the factor, aka the number of unique variables invovled
+     */
+    public int dimension(){
         return involved.size();
     }
 
@@ -356,6 +362,26 @@ public class Factor {
 
     public void setProbs(Map<Condition, Double> probs) {
         this.probs = probs;
+    }
+   
+    public String name() {
+       
+        return "f("+ involved.toString() +")";
+    }
+
+    /**
+     * Checks if the factor contains a variable.
+     * Checks only the string value of the name
+     * @param var
+     * @return
+     */
+    public boolean contains(Variable var){
+        for (Variable inv:involved){
+            if (inv.getName().equals(var.getName())){
+                return true;
+            }
+        }
+        return false;
     }
 
 

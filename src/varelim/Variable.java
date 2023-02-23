@@ -160,13 +160,25 @@ public class Variable implements Comparable<Variable>{
      * @return evaluation of the variable
      */
     public int evaluate(String heuristic) {
-
-        return switch (heuristic) {
+		if (heuristic.equals("least-incoming")){
+			return getNrOfParents();
+		}
+		else if (heuristic.equals("fewest factors")){
+			return getNrOfFactors();
+		}
+		else{
+			return 0;
+		}
+/*
+ * 
+ *         return switch (heuristic) {
             case "empty" -> 0;
             case "least-incoming" -> getNrOfParents();
             case "fewest factors" -> getNrOfFactors();
             default -> 0;
         };
+ */
+
     }
 
 	/**

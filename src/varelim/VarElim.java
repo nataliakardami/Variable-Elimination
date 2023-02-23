@@ -1,13 +1,43 @@
 package varelim;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.PriorityQueue;
 
 public class VarElim {
     private Variable query;
     private ArrayList<ObsVar> observed;
     private ArrayList<Variable> variables;
-    ArrayList<Factor> factors;
+    private ArrayList<Factor> factors;
+    private PriorityQueue<Variable> queue;
+
+     /**
+      * Constructor for UI
+      * @param ui
+      * @param vars
+      */
+      public VarElim(UserInterface ui, ArrayList<Variable> vars){
+        this.query = ui.getQueriedVariable();
+        this.observed = ui.getObservedVariables();
+        this.variables = vars;
+        this.factors = makeFactors();
+        this.queue = new PriorityQueue<>(vars);
+    }
+    /**
+     * Constructor for manual input 
+     * @param vars
+     * @param query
+     * @param observed
+     */
+    public VarElim(ArrayList<Variable> vars, Variable query, ArrayList<ObsVar> observed){
+        this.query = query;
+        this.observed = observed;
+        this.variables = vars;
+        this.factors = makeFactors();
+        this.queue = new PriorityQueue<>(vars);
+
+        
+    }
 
 
         /*
@@ -22,53 +52,65 @@ public class VarElim {
 
      */
 
-        public void algorithm(){
+        public void start(){
             ArrayList<Factor> factors = this.factors;
 
-            PriorityQueue<Variable> queue = new PriorityQueue<>();
-
-            Variable current = queue.poll();
-
-            System.out.println("Variable to be eliminated : " + current);
+            //ArrayList<ObsVar> evidence = queue.poll();
             
-            // for all factors find the factor with size >=2 and sum out 'current' (variable)
+            System.out.println("Step 1: Reducing the factors by the observed variables: ");
+            
+            
             for(Factor f: factors){
-                
-                if (f.getInvolved().size() > 1){
-                    f.sumOut(current);
-                }
+
+                f = f.reduce(observed); // this operation reduces the existing factor, no need to delete or add.
+               
             }
 
-            
+            System.out.println("Step 2: For each hidden variable: ");
+
+            // Remove observed and evidence from queue to only have hidden variabled
+            queue.remove(query);
+            for (ObsVar obs:observed){
+                queue.remove(obs.getVar());
+            }
+            // FOR EACH HIDDEN VARIABLE IN QUEUE
+            while (!queue.isEmpty()){
+                Variable elim = queue.poll();
+                
+                
+                ArrayList<Factor> toMult = new ArrayList<Factor>();
+                ArrayList<Factor> toRemove = new ArrayList<Factor>();
+                Factor newf = factors.get(0);
+                factors.remove(0);
+                for(Factor f: factors){
+                    
+                     if (f.contains(elim) ){ // if a factor f mentions the variable to be eliminated
+                        Factor fc  = new Factor(f.multiply(newf)); // add factor to list of candidates   
+                        System.out.println(f+" removed");
+                        newf = fc;
+                        toRemove.add(f);
+
+                    }
+                   
+                    // remove old factors from this.factors
+                    
+                }
+                factors.add(newf);
+                // Iterator<Factor> it = toMult.iterator();
+                // Factor newf = it.next();
+                factors.removeAll(toRemove);
+
+
+            }
+
+
 
             
         }
     
 
 
-     /**
-      * Constructor for UI
-      * @param ui
-      * @param vars
-      */
-    public VarElim(UserInterface ui, ArrayList<Variable> vars){
-        this.query = ui.getQueriedVariable();
-        this.observed = ui.getObservedVariables();
-        this.variables = vars;
-        this.factors = makeFactors();
-    }
-    /**
-     * Constructor for manual input 
-     * @param vars
-     * @param query
-     * @param observed
-     */
-    public VarElim(ArrayList<Variable> vars, Variable query, ArrayList<ObsVar> observed){
-        this.query = query;
-        this.observed = observed;
-        this.variables = vars;
-        this.factors = makeFactors();
-    }
+    
     /**
      * Compiles an Arraylist of all the initial factors
      * by iterating over each node of the network (besides the observed)
