@@ -74,12 +74,12 @@ public class VarElim {
                 queue.remove(obs.getVar());
             }
            
-            
+            // TODO last factor multiplied is always 0
 
             while (!queue.isEmpty()){  // FOR EACH HIDDEN VARIABLE IN QUEUE
                 Variable elim = queue.poll();
                 
-                
+                System.out.println("----------------------------eliminate "+elim);
                 // ArrayList<Factor> toMult = new ArrayList<Factor>();
                 ArrayList<Factor> toRemove = new ArrayList<Factor>();
                 Factor newf = new Factor(1.0);
@@ -88,9 +88,10 @@ public class VarElim {
                     
                     if (f.contains(elim)){ // if a factor f mentions the variable to be eliminated
                         Factor fc  = new Factor(f.multiply(newf)); // add factor to list of candidates   
-                        System.out.println(f+" elim");
+                        System.out.println(f+" x "+newf);
                         newf = fc;
-                        toRemove.add(f);
+                        
+                        toRemove.add(f); // this is a problem 
                     }
               
                    
@@ -100,7 +101,13 @@ public class VarElim {
 
                 // sum out the elim variable
                 // and add the new factor to the factor list
-                factors.add(new Factor(newf.sumOut(elim)));
+                if (newf.contains(elim)){
+                Factor summed = new Factor(newf.sumOut(elim)); // TODO SUM OUT makes everything 0 on the last elimination
+                factors.add(summed);
+                }
+                else{
+                    factors.add(newf);
+                }
               
 
 
@@ -116,7 +123,7 @@ public class VarElim {
 
                 for(Factor f: factors){
                     Factor fc  = new Factor(f.multiply(first)); // add factor to list of candidates   
-                    System.out.println(f+" removed");
+                    System.out.println(f+" remov");
                     first = fc;
                     toRemove2.add(f);        
                }
@@ -128,7 +135,8 @@ public class VarElim {
 
 
             System.out.println("Step 4: Normalize");
-            factors.get(0).normalize();
+            // factors.get(0).normalize();
+            System.out.println(factors);
 
 
 
