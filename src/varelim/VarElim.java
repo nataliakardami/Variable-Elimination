@@ -100,7 +100,9 @@ public class VarElim {
 
                 // sum out the elim variable
                 // and add the new factor to the factor list
+                if (newf.dimension()>=1){
                 factors.add(new Factor(newf.sumOut(elim)));
+            }
               
 
 
@@ -129,6 +131,7 @@ public class VarElim {
 
             System.out.println("Step 4: Normalize");
             factors.get(0).normalize();
+
 
 
 
@@ -163,7 +166,7 @@ public class VarElim {
         
     }
     return null;    
-}
+    }
 
     /**
      * Compiles an Arraylist of all the initial factors

@@ -213,7 +213,7 @@ public class Factor {
 
 
 
-    public Factor multiplication(Factor f1){
+    public Factor multiply(Factor f1){
         Factor f2 = new Factor(this);
 
         Map<Condition, Double> newProbs = new HashMap<>();
