@@ -71,24 +71,21 @@ public class Main {
             var.setVarElim(ve);
         
         }
-        ve.start();
-        //ve.start();
-    //     Factor out = ve.getFactors().get(2).sumOut(B);
-    //     Factor out2 = ve.getFactors().get(2).sumOut(E);
-    //     Factor kms = out.sumOut(E);
+        Factor out = ve.getFactors().get(2).sumOut(B);
+        Factor out2 = ve.getFactors().get(2).sumOut(E);
+        Factor kms = out.sumOut(E);
 
-    //     System.out.println("outB1: " + out.getProbs());
-    //     System.out.println("outE: " + out2.getProbs());
+        System.out.println("outB1: " + out.getProbs());
+        System.out.println("outE: " + out2.getProbs());
         
-    //    // Factor output = out.multiply(out2);
-    //     //System.out.println("output: " + output);
-    //     kms.normalize();
-    //     System.out.println("output after normalization: " + kms.getProbs());
-    //     Factor f1 = ve.getFactors().get(0);
-    //     Factor f2 = ve.getFactors().get(2);
-    //     Factor fc = f1.multiply(f2);
-      //  System.out.println(fc.getProbs());
-       
+       // Factor output = out.multiply(out2);
+        //System.out.println("output: " + output);
+        kms.normalize();
+        System.out.println("output after normalization: " + kms.getProbs());
+        Factor f1 = ve.getFactors().get(0);
+        Factor f2 = ve.getFactors().get(2);
+        Factor fc = f1.multiply(f2);
+        ve.start();
   
         // System.out.println(fc);
 
