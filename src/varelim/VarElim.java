@@ -73,35 +73,62 @@ public class VarElim {
             for (ObsVar obs:observed){
                 queue.remove(obs.getVar());
             }
-            // FOR EACH HIDDEN VARIABLE IN QUEUE
-            while (!queue.isEmpty()){
+           
+            
+
+            while (!queue.isEmpty()){  // FOR EACH HIDDEN VARIABLE IN QUEUE
                 Variable elim = queue.poll();
                 
                 
-                ArrayList<Factor> toMult = new ArrayList<Factor>();
+                // ArrayList<Factor> toMult = new ArrayList<Factor>();
                 ArrayList<Factor> toRemove = new ArrayList<Factor>();
-                Factor newf = factors.get(0);
-                factors.remove(0);
+                Factor newf = new Factor(1.0);
+                // factors.remove(0);
                 for(Factor f: factors){
                     
-                     if (f.contains(elim) ){ // if a factor f mentions the variable to be eliminated
+                    if (f.contains(elim)){ // if a factor f mentions the variable to be eliminated
                         Factor fc  = new Factor(f.multiply(newf)); // add factor to list of candidates   
-                        System.out.println(f+" removed");
+                        System.out.println(f+" elim");
                         newf = fc;
                         toRemove.add(f);
-
                     }
+              
                    
-                    // remove old factors from this.factors
-                    
                 }
-                factors.add(newf);
-                // Iterator<Factor> it = toMult.iterator();
-                // Factor newf = it.next();
+                // remove old factors from this.factors
                 factors.removeAll(toRemove);
+
+                // sum out the elim variable
+                // and add the new factor to the factor list
+                factors.add(new Factor(newf.sumOut(elim)));
+              
 
 
             }
+            System.out.println("Step 3: Multiply the remaining factors");
+
+            // grab first factor
+            ArrayList<Factor> toRemove2 = new ArrayList<Factor>();
+            Factor first = factors.get(0);
+            factors.remove(0);
+
+            while(factors.size() >1){ // while theres 2 factors left
+
+                for(Factor f: factors){
+                    Factor fc  = new Factor(f.multiply(first)); // add factor to list of candidates   
+                    System.out.println(f+" removed");
+                    first = fc;
+                    toRemove2.add(f);        
+               }
+               // remove old factors from this.factors
+               factors.removeAll(toRemove2);
+
+            }
+
+
+
+            System.out.println("Step 4: Normalize");
+            factors.get(0).normalize();
 
 
 
@@ -110,7 +137,34 @@ public class VarElim {
     
 
 
-    
+    public Factor multiplyFactors(){
+        while (!queue.isEmpty()){
+            Variable elim = queue.poll();
+            
+            
+            //ArrayList<Factor> toMult = factors;
+            ArrayList<Factor> toRemove = new ArrayList<Factor>();
+            Factor newf = factors.get(0);
+            factors.remove(0);
+            for(Factor f: factors){
+                
+                 if (f.contains(elim) ){ // if a factor f mentions the variable to be eliminated
+                    Factor fc  = new Factor(f.multiply(newf)); // add factor to list of candidates   
+                    System.out.println(f+" removed");
+                    newf = fc;
+                    toRemove.add(f);
+                }
+               
+            }
+            // remove old factors from this.factors
+            factors.removeAll(toRemove);
+
+
+        
+    }
+    return null;    
+}
+
     /**
      * Compiles an Arraylist of all the initial factors
      * by iterating over each node of the network (besides the observed)
