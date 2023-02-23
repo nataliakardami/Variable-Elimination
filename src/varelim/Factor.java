@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class Factor {
     private ArrayList<Variable> involved;
     private Map<Condition, Double> probs;
     private Variable simpleVar;
+
+    private double value;
 
 
     /**
@@ -36,6 +36,12 @@ public class Factor {
         this.simpleVar = o.getSimpleVar();
     }
 
+    // just for the empty factor wich is a probability
+    public Factor(Double val){
+        this.value = val;
+        this.involved = new ArrayList<>();
+    }
+
 
     // ****** FACTOR OPERATIONS *******
 
@@ -50,8 +56,6 @@ public class Factor {
     public Factor reduce(ArrayList<ObsVar> observed) {
 
         Iterator<Condition> iterator = probs.keySet().iterator(); // iterate over the map of probs
-
-        // System.out.println(probs.size());
 
         for (ObsVar var : observed) {
             //String obsVal = var.getValue();
@@ -70,8 +74,13 @@ public class Factor {
             }
 
         }
+
+        if (this.probs.size()==1){
+            return new Factor(new ArrayList<>(probs.values()).get(0));
+        }
+
+
         this.setProbs(probs);
-        // System.out.println(probs.size());
         return this;
 
     }
@@ -86,7 +95,6 @@ public class Factor {
      */
     public Factor sumOut(Variable elim) {
         
-        System.out.println(probs.size());
         ArrayList<ObsVar> poss = new ArrayList<>();
         ArrayList<Condition> conds = new ArrayList<>();
         ArrayList<Variable> vars1 = new ArrayList<>(this.involved);
@@ -99,23 +107,20 @@ public class Factor {
         
         // remove duplicates of vars
     
-        // ArrayList<Variable> vars = new ArrayList<>(vars1.stream().distinct().collect(Collectors.toList()));
         ArrayList<Variable> vars = new ArrayList<Variable>(new LinkedHashSet<Variable>(vars1));
 
         // loop over condition
         for (String val1 : vars.get(0).getValues()) {
-            if(vars.size() >=2 ){
+            if(vars.size() >= 2 ){
                 for (String val2 : vars.get(1).getValues()) {
                     poss.add(new ObsVar(vars.get(1), val2));
                     poss.add(new ObsVar(vars.get(0), val1));
-                    // poss.add(new ObsVar(vars.get(1), val2));
                     conds.add(new Condition(poss));
                     poss.clear();
                 }
             }
             else{
                 poss.add(new ObsVar(vars.get(0), val1));
-                // poss.add(new ObsVar(vars.get(1), val2));
                 conds.add(new Condition(poss));
                 poss.clear();
             }
@@ -208,137 +213,161 @@ public class Factor {
 
 
 
-    /**
-     * 
-     * @param f1 
-     * @return
-     */
-    public Factor multiply(Factor f1) {
-        Factor f2 = new Factor(this); 
+    public Factor multiplication(Factor f1){
+        Factor f2 = new Factor(this);
 
-        Map<Condition, Double> newprobs = new HashMap<>();
+        Map<Condition, Double> newProbs = new HashMap<>();
         
         ArrayList<Variable> common = new ArrayList<>();
-        ArrayList<Variable> f1_unique = new ArrayList<>(f1.involved);
-        ArrayList<Variable> f2_unique = new ArrayList<>(f2.involved);
+        ArrayList<Variable> f1_vars = new ArrayList<>(f1.involved);
+        ArrayList<Variable> f2_vars = new ArrayList<>(f2.involved);
+
+        Map<Condition, Double> map_f1 = f1.getProbs();
+        Map<Condition, Double> map_f2 = f2.getProbs();
+
+
+
+        ArrayList<Variable> vars = new ArrayList<>(f1_vars);
+        vars.addAll(f2_vars);
         
-        for (Variable var1:f1_unique){
-            for (Variable var2:f2_unique){
+
+        // to get all the distinct variables in a list
+        ArrayList<Variable> allVariables = new ArrayList<>();
+
+        for(Variable var: vars){
+            if (!allVariables.contains(var)){
+                allVariables.add(var);
+            }
+        }
+
+
+
+        // check for empty factor
+        if (f1_vars.size() == 0 && f2_vars.size() == 0){
+            return new Factor(f1.getValue() * f2.getValue());
+        }
+        else if (f1_vars.size() == 0){
+            Iterator<Condition> iterator = map_f2.keySet().iterator(); // iterate over the map of probs
+            double multi = 0;
+            Condition cond = null;
+            while (iterator.hasNext()) {
+                    cond = iterator.next();
+                    multi = f1.getValue() * map_f2.get(cond);
+
+                    newProbs.put(cond, multi);
+            }
+
+            return new Factor(allVariables, newProbs);
+        }
+        else if(f2_vars.size() == 0){
+            Iterator<Condition> iterator = map_f1.keySet().iterator(); // iterate over the map of probs
+            double multi = 0;
+            Condition cond = null;
+
+            while (iterator.hasNext()) {
+                cond = iterator.next();
+                multi = f2.getValue() * map_f1.get(cond);
+                newProbs.put(cond, multi);
+            }
+
+            return new Factor(allVariables, newProbs);
+        }
+        
+
+
+        // find common variables if any
+        for (Variable var1: new ArrayList<>(f1_vars)){
+            for (Variable var2: new ArrayList<>(f2_vars)){
                 if (var1.equals(var2)){
-                    f1_unique.remove(var1);
-                    f2_unique.remove(var1);
                     common.add(var1);
                 }
             }
         }
 
-        // unique variables in both factors
-        f1_unique.removeAll(common);
-        f2_unique.removeAll(common);
+        
+        
+        
 
-        // ---------------------------
-
-        Condition cond = null;
-
-        double multi = 1.0;
-
-        // loop f1 unique and values
-        for(Variable f1_var: f1_unique){ 
-            for (String val1: f1_var.getValues()){
-
-                // loop f2 unique and values
-                for(Variable f2_var: f2_unique){
-                    for(String val2: f2_var.getValues()){
-                        
-                        //loop through every common variable 
-                        // and it's possible values
-                        for(Variable var: common){
-                            for (String value: var.getValues()){
-
-                                ArrayList<ObsVar> poss_val = new ArrayList<>(); // list for the conditions
-
-                                ObsVar temp1 = new ObsVar(f1_var, val1); // parameter
-                                ObsVar temp2 = new ObsVar(f2_var, val2); // this factor
-                                ObsVar comm = new ObsVar(var, value); // common var
-
-                                // get first prob X = x, Y = y
-                                poss_val.add(comm); // common
-                                poss_val.add(temp1); // f1
-                                // System.out.println("f1: " + f1.getProbs());
-
-                                Condition kms = new Condition(poss_val);
-                                // System.out.println(kms);
+        // iterating over variables
+        Iterator<Condition> it_f1 = map_f1.keySet().iterator(); // iterate over the map of probs
+        
+        while (it_f1.hasNext()) {
+            Iterator<Condition> it_f2 = map_f2.keySet().iterator(); // iterate over the map of probs
 
 
-                                double x1 = 0;
+            Condition key_f1 = it_f1.next();
+            ArrayList<ObsVar> observed_f1 = key_f1.getObserved();
 
-                                Map<Condition, Double> map = f1.getProbs();
-                                Iterator<Condition> iterator = map.keySet().iterator(); // iterate over the map of probs
-
-                                while (iterator.hasNext()) {
-                                    Condition key = iterator.next();
+            while (it_f2.hasNext()) {
                     
-                                    if (key.contains(kms)) {
-                                        x1 = map.get(key);
-                                    }
+                Condition key_f2 = it_f2.next();
+                ArrayList<ObsVar> observed_f2 = key_f2.getObserved();
+
+                ArrayList<ObsVar> allObserved = new ArrayList<>(observed_f2);
+                allObserved.addAll(observed_f1);
+                
+                ArrayList<ObsVar> distinct_observed = new ArrayList<>();
+
+                // remove duplicates in     !!!variables!!!     from this list
+                for(ObsVar var: allObserved){
+                    boolean bool = true;
+                    for(ObsVar var2: distinct_observed){
+                        if (var2.equals(var)){
+                            bool = false;
+                        }
+                    }
                     
-                                }                             
+                    if (bool){
+                        distinct_observed.add(var);
+                    }
+                }
 
 
-                            
-                                poss_val.clear();
-
-                                // get second prob Y = y, Z = z
-                                poss_val.add(comm);
-                                poss_val.add(temp2);
-                                
-                                
-                                kms = new Condition(poss_val);
-
-                                map = f2.getProbs();
-                                iterator = map.keySet().iterator(); // iterate over the map of probs
-
-                                double x2 = 0;
-                                
-                                while (iterator.hasNext()) {
-                                    Condition key = iterator.next();
+                if (common.size() >0){
                     
-                                    if (key.contains(kms)) {
-                                        x2 = map.get(key);
-                                    }
-                    
-                                } 
+                    int count = 0;
 
-                                multi = x1 * x2;
-
-                                // for the final condition
-                                poss_val.add(temp1);
-                                
-                                cond = new Condition(poss_val);
-
-                                newprobs.put(cond, multi);
-
-
+                    for (ObsVar var1: new ArrayList<>(observed_f1)){
+                        for (ObsVar var2: new ArrayList<>(observed_f2)){
+                            if (var1.equals(var2)){
+                                count++;
                             }
-
                         }
                     }
 
-                }
-            }
-        }
-    
-        f2_unique.addAll(f1_unique);
-        f2_unique.addAll(common);
-        return new Factor(f2_unique, newprobs);
-    }
+                    if(count == common.size()){
+                        Condition cond = new Condition(distinct_observed);
+                        double multi = map_f1.get(key_f1) * map_f2.get(key_f2);
 
+                        newProbs.put(cond, multi);
+                    }
+
+                }
+                else{
+                    Condition cond = new Condition(distinct_observed);
+                    double multi = map_f1.get(key_f1) * map_f2.get(key_f2);
+
+                    newProbs.put(cond, multi);
+                }
+                
+            }
+            
+
+        }
+
+        return new Factor(allVariables, newProbs);
+    }
+ 
 
     
 
     // ****** SETTERS AND GETTERS *******
     public ArrayList<Variable> getInvolved() {
         return involved;
+    }
+
+    public double getValue(){
+        return this.value;
     }
 
     /**
@@ -382,6 +411,15 @@ public class Factor {
             }
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        String name = "f(";
+        for(Variable inv:involved){
+            name += inv.getName()+" ";
+        }
+        return name+")";
     }
 
 
