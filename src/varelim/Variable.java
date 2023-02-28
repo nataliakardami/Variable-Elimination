@@ -12,12 +12,15 @@ import java.util.Map;
  * Modified to use the new Varaible & Condition based- data structure.
  * @author Pepe Tiebosch
  */
-public class Variable {
+public class Variable implements Comparable<Variable>{
 
 	private String name;
 	private ArrayList<String> possibleValues;
 	private ArrayList<Variable> parents; // Note that parents is not set in the constructor, because of the .bif file layout
 	private Map<Condition, Double> probabilities; // Note that probabilities are not set in the constructor because of the .bif file layour
+
+	// private ArrayList<Variable> allVariables;
+	private VarElim varElim;
 
 	/**
 	 * Constructor of the class.
@@ -29,6 +32,7 @@ public class Variable {
 		this.possibleValues = possibleValues;
 		this.parents = new ArrayList<Variable>();
 		this.probabilities = new HashMap<>();
+		// this.allVariables = allVariables;
 	}
 	
 	/**
@@ -127,4 +131,79 @@ public class Variable {
 			return parents.size();
 		return 0;
 	}
+
+	public void setVarElim(VarElim varElim){
+		this.varElim = varElim;
+	}
+
+	public VarElim getVarElim() {
+		return this.varElim;
+	}
+
+
+	public int getNrOfFactors(){
+
+		ArrayList<Factor> list = varElim.getFactors();
+		int count = 0;
+		for (Factor f: list){
+			for(Variable var: f.getInvolved()){
+				if(var.equals(this)){
+					count++;
+				}
+			}
+		}
+
+		return count;
+	}
+
+
+
+	/**
+     * Chooses the correct function based on the string given.
+     * @param heuristic a string to denote the heuristic.
+     * @return evaluation of the variable
+     */
+    public int evaluate(String heuristic) {
+		if (heuristic.equals("least-incoming")){
+			return getNrOfParents();
+		}
+		else if (heuristic.equals("fewest factors")){
+			return getNrOfFactors();
+		}
+		else{
+			return 0;
+		}
+/*
+ * 
+ *         return switch (heuristic) {
+            case "empty" -> 0;
+            case "least-incoming" -> getNrOfParents();
+            case "fewest factors" -> getNrOfFactors();
+            default -> 0;
+        };
+ */
+
+    }
+
+	/**
+     * @param o the object to be compared.
+     * @return 0
+     */
+    @Override
+	public int compareTo(Variable o){
+
+		// here we pass the heuristic as a string
+        String heuristic = "combined";
+
+        int comparison = this.evaluate(heuristic) - o.evaluate(heuristic);
+        if (comparison > 0) {
+            return 1;
+        } else if (comparison < 0) {
+            return -1;
+        } else return 0;
+
+	}
+
+
+
 }

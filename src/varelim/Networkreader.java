@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+
 /**
  * Class that reads in a network from a .bif file and puts the variables and probabilities at the right places.
  * 
