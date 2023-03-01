@@ -25,6 +25,7 @@ public class Main {
 		
 		// Make user interface
 		UserInterface ui = new UserInterface(variables);
+
 		
 		// Print variables and probabilities
 		ui.printNetwork();

@@ -10,6 +10,7 @@ public class VarElim {
     private ArrayList<Variable> variables;
     private ArrayList<Factor> factors;
     private PriorityQueue<Variable> queue;
+    private int elimWidth;
 
      /**
       * Constructor for UI
@@ -22,6 +23,7 @@ public class VarElim {
         this.variables = vars;
         this.factors = makeFactors();
         this.queue = new PriorityQueue<>(vars);
+        this.elimWidth =1;
     }
     /**
      * Constructor for manual input 
@@ -35,6 +37,7 @@ public class VarElim {
         this.variables = vars;
         this.factors = makeFactors();
         this.queue = new PriorityQueue<>(vars);
+        this.elimWidth =1;
 
         
     }
@@ -59,6 +62,8 @@ public class VarElim {
             ArrayList<Factor> factors = this.factors;
 
             //ArrayList<ObsVar> evidence = queue.poll();
+            setElimWidth();
+            System.out.println("Tree width: " +getElimWidth());
             
             System.out.println("Step 1: Reducing the factors by the observed variables: ");
             
@@ -68,7 +73,7 @@ public class VarElim {
                 f = f.reduce(observed); // this operation reduces the existing factor, no need to delete or add.
                
             }
-
+            // setElimWidth();
             System.out.println("Step 2: For each hidden variable: ");
 
             // Remove observed and evidence from queue to only have hidden variabled
@@ -90,10 +95,11 @@ public class VarElim {
                 for(Factor f: factors){
                     
                     if (f.contains(elim)){ // if a factor f mentions the variable to be eliminated
+                        setElimWidth();
                         Factor fc  = new Factor(f.multiply(newf)); // add factor to list of candidates   
                         System.out.println(f+" x "+newf);
                         newf = fc;
-                        
+                        setElimWidth(newf.dimension()); // sets elim width to max after multiplication
                         toRemove.add(f); // this is a problem 
                     }
               
@@ -121,6 +127,7 @@ public class VarElim {
             // grab first factor
             ArrayList<Factor> toRemove2 = new ArrayList<Factor>();
             Factor first = factors.get(0);
+           
             factors.remove(0);
 
             while(factors.size() >1){ // while theres 2 factors left
@@ -129,18 +136,24 @@ public class VarElim {
                     Factor fc  = new Factor(f.multiply(first)); // add factor to list of candidates   
                     System.out.println(f+" remov");
                     first = fc;
+                    elimWidth = getElimWidth();
                     toRemove2.add(f);        
                }
                // remove old factors from this.factors
+               elimWidth = getElimWidth();
                factors.removeAll(toRemove2);
+             
 
             }
+            
+            
 
 
 
             System.out.println("Step 4: Normalize");
             // factors.get(0).normalize();
             System.out.println(factors);
+            System.out.println("Elimination width of this run: "+elimWidth);
 
 
 
@@ -202,6 +215,23 @@ public class VarElim {
 
 
      // ********** SETTERS AND GETTERS ************
+    public int getElimWidth(){
+        int maxdim = elimWidth;
+        for (Factor f:factors){
+            if (f.dimension()>maxdim)
+                maxdim = f.dimension();
+        }
+        this.elimWidth = maxdim;
+        return maxdim;
+    }
+    public void setElimWidth(){
+        this.elimWidth = getElimWidth();
+    }
+    public void setElimWidth(int width){
+        if(this.elimWidth<width){
+            this.elimWidth = width;
+        }
+    }
     public ArrayList<Factor> getFactors() {
          return factors;
     }
