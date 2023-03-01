@@ -11,7 +11,7 @@ public class Factor {
     private Map<Condition, Double> probs;
     private Variable simpleVar;
 
-    private double value;
+    private double value = -1;
 
 
     /**
@@ -223,6 +223,11 @@ public class Factor {
 
 
 
+    /**
+     * Multiplies a factor with another factor.
+     * @param f1
+     * @return
+     */
     public Factor multiply(Factor f1){
 
 

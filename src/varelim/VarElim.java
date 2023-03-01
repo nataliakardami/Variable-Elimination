@@ -52,6 +52,9 @@ public class VarElim {
 
      */
 
+        /**
+         * This function executes the variable elimination algorithm.
+         */
         public void start(){
             ArrayList<Factor> factors = this.factors;
 

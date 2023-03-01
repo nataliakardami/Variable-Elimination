@@ -30,21 +30,47 @@ public class Main {
 		ui.printNetwork();
 		
 		// Ask user for query
-		// ui.askForQuery(); 
-		// Variable query = ui.getQueriedVariable(); 
+		ui.askForQuery(); 
+		Variable query = ui.getQueriedVariable(); 
 		
 		// Ask user for observed variables 
-		// ui.askForObservedVariables(); 
-		// ArrayList<ObsVar> observed = ui.getObservedVariables(); 
+		ui.askForObservedVariables(); 
+		ArrayList<ObsVar> observed = ui.getObservedVariables(); 
 		
 		// Turn this on if you want to experiment with different heuristics for bonus points (you need to implement the heuristics yourself)
-		// ui.askForHeuristic();
-		// String heuristic = ui.getHeuristic();
+		ui.askForHeuristic();
+		String heuristic = ui.getHeuristic();
 		
 		// Print the query and observed variables
-		// ui.printQueryAndObserved();
+		ui.printQueryAndObserved();
 
 
+        VarElim ve = new VarElim(variables, query, observed);
+
+        // necessary for elimination!!!!!!!!!!!!!!!!
+        for(Variable var: variables){
+            var.setVarElim(ve);
+        }
+
+        long startTime = System.nanoTime();
+   
+        ve.start();
+
+        long runtime = System.nanoTime() - startTime;
+
+        double value = ve.getFactors().get(0).getValue();
+        if (value != -1){
+            System.out.println("Value:" + value);
+        }
+        else{
+            System.out.println(ve.getFactors().get(0).getProbs());
+        }
+
+        System.out.println("Time elapsed in ms : " + runtime);
+
+
+
+        /* 
         // MANUAL TESTING suzyyy
         //----------------------------------------------------------------------
         
@@ -53,15 +79,7 @@ public class Main {
 
         // survey.bif -> doesn't work
         // test2(variables);
-        
-
-
-        
-  
-        
-
-
-
+        */
 
     }
 
@@ -94,6 +112,7 @@ public class Main {
 
         System.out.println(ve.getFactors().get(0).getProbs());
         System.out.println(ve.getFactors().get(0).getValue());
+
         
     }
 
